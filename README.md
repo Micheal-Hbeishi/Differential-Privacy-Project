@@ -1,4 +1,16 @@
-# Differential Privacy Project
+# Differential Privacy, Utility, and Explainability Project
+
+This repository now includes a **paper-aligned image-classification replication** of Abbasi, Mori, and Saracino (IEEE TDSC, 2025), alongside the original introductory sales-regression experiment.
+
+For academic review, start with [PROFESSOR_REPORT.md](PROFESSOR_REPORT.md) and run:
+
+```bash
+python notebook/paper_aligned_replication.py
+```
+
+The replication uses handwritten-digit images, neural classification, per-example clipped and Gaussian-noised DP-SGD, a bottleneck autoencoder, SmoothGrad explanations, and a privacy-utility-explainability compatibility matrix. Its scope and deviations from the original paper are explicitly documented; it does not claim exact numerical reproduction or a production-certified privacy guarantee.
+
+## Legacy tabular experiment
 
 This project compares three Ridge regression approaches for predicting chocolate sales amounts:
 
@@ -63,8 +75,8 @@ epsilon = 10.0
 
 Current saved results:
 
-| Model                                    | MAE      | RMSE     | R2 | Epsilon  |
-| -------------------------------------------------------------------------------|
+| Model                                    | MAE      | RMSE     | R2   | Epsilon |
+|-----------------------------------------:|---------:|---------:|:----:|--------:|
 | Baseline Ridge Regression                | 107.6727 | 207.3698 | 0.6902 |      |
 | DP-Style Noisy Ridge Regression          | 107.6891 | 208.2328 | 0.6876 | 10.0 |
 | Adaptive DP-Style Noisy Ridge Regression | 107.6702 | 208.2565 | 0.6875 | 10.0 |
