@@ -1,5 +1,7 @@
 numpy
 pandas
-scikit-learn
-jupyter
 matplotlib
+# TensorFlow Privacy provides the DP-SGD optimizer and RDP accountant used by
+# notebook/paper_aligned_replication.py.
+tensorflow>=2.14,<2.16
+tensorflow-privacy==0.9.0
