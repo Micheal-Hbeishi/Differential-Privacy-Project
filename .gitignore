@@ -9,6 +9,10 @@ __pycache__/
 venv/
 env/
 
+# Generated experiment and inspection files
+results/
+tmp/
+
 # Jupyter
 .ipynb_checkpoints/
 
