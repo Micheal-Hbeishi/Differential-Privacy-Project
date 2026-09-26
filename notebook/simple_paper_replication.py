@@ -76,7 +76,9 @@ def train_baseline(tf, x_train, y_train):
     """Train an ordinary classifier to establish the best-utility reference."""
     model = classifier(tf)
     model.compile(
-        optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+        # Legacy Adam is substantially faster with TensorFlow 2.11-2.15 on
+        # Apple Silicon and is the implementation recommended by TensorFlow.
+        optimizer=tf.keras.optimizers.legacy.Adam(learning_rate=0.001),
         loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
         metrics=["accuracy"],
     )
@@ -126,7 +128,10 @@ def train_autoencoder(tf, x_train):
     decoded = tf.keras.layers.Dense(28 * 28, activation="sigmoid")(encoded)
     outputs = tf.keras.layers.Reshape((28, 28, 1))(decoded)
     model = tf.keras.Model(inputs, outputs)
-    model.compile(optimizer="adam", loss="mae")
+    model.compile(
+        optimizer=tf.keras.optimizers.legacy.Adam(learning_rate=0.001),
+        loss="mae",
+    )
     model.fit(x_train, x_train, batch_size=BATCH_SIZE, epochs=EPOCHS, verbose=0)
     return model
 

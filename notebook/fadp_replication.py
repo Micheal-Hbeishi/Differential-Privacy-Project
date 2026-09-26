@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -23,6 +24,13 @@ from skimage.metrics import structural_similarity
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_DIR = ROOT / "results" / "fadp_replication"
+
+
+class _ConvBackpropWarningFilter(logging.Filter):
+    """Hide a noisy, nonfatal vectorized Conv2D gradient warning."""
+
+    def filter(self, record):
+        return "Conv2DBackpropFilter uses a while_loop" not in record.getMessage()
 
 
 @dataclass(frozen=True)
@@ -52,13 +60,17 @@ def dependencies():
         raise RuntimeError(
             "Install dependencies first: python -m pip install -r requirements.txt"
         ) from error
+    tf.get_logger().addFilter(_ConvBackpropWarningFilter())
     return tf, dp_event, rdp
 
 
 def load_cifar10(tf, cfg):
     """Load disjoint, normalized CIFAR-10 train/validation/test subsets."""
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.cifar10.load_data()
-    y_train, y_test = y_train[:, 0], y_test[:, 0]
+    # CIFAR-10 labels are uint8, but TensorFlow indexing operations such as
+    # tf.gather require signed integer indices.
+    y_train = y_train[:, 0].astype("int32")
+    y_test = y_test[:, 0].astype("int32")
     x_train = x_train[: cfg.train_limit].astype("float32") / 255.0
     y_train = y_train[: cfg.train_limit]
     x_val = x_test[: cfg.validation_limit].astype("float32") / 255.0
@@ -93,7 +105,7 @@ def make_dataset(tf, x, y, cfg, training):
 
 def train_baseline(tf, model, train_ds, cfg):
     model.compile(
-        optimizer=tf.keras.optimizers.Adam(cfg.learning_rate),
+        optimizer=tf.keras.optimizers.legacy.Adam(cfg.learning_rate),
         loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
         metrics=["accuracy"],
     )
@@ -102,6 +114,7 @@ def train_baseline(tf, model, train_ds, cfg):
 
 def channel_masks(tf, model, images, labels, cfg):
     """Create three channel tiers from gradient-weighted final-layer activations."""
+    labels = tf.cast(labels, tf.int32)
     probe = tf.keras.Model(
         model.inputs, [model.get_layer("last_conv").output, model.output]
     )
@@ -176,7 +189,7 @@ def clipped_average(tf, per_grads, clip_norm):
 
 def train_private(tf, model, train_ds, cfg, adaptive):
     """Train with per-example clipping and uniform or feature-adaptive noise."""
-    optimizer = tf.keras.optimizers.Adam(cfg.learning_rate)
+    optimizer = tf.keras.optimizers.legacy.Adam(cfg.learning_rate)
     mask_history = []
     for epoch in range(cfg.epochs):
         losses = []
