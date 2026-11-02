@@ -115,3 +115,15 @@ explicit. More importantly, its FADP epsilon is only illustrative: a formal
 privacy proof must account for data-dependent masks and feature sensitivity.
 
 See [`PROJECT_NOTES.md`](PROJECT_NOTES.md) for a combined presentation guide.
+
+## Another version: low resources versus substantial resources
+
+The original scripts remain the low-resource demonstrations. The new
+[`high_resource_replication.py`](notebook/high_resource_replication.py) adds
+pretrained MobileNet, a larger CIFAR-10 split, longer training, repeated seeds,
+and noise sweeps. Its research results are pending execution.
+
+See [`RESOURCE_COMPARISON.md`](RESOURCE_COMPARISON.md) for the protocol, resource
+budgets, sources, and remaining paper differences, and
+[`PRESENTATION_SCRIPT_RESOURCE_COMPARISON.md`](PRESENTATION_SCRIPT_RESOURCE_COMPARISON.md)
+for the new presentation framing.
